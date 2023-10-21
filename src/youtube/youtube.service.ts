@@ -34,7 +34,7 @@ export class YoutubeService {
       },
     };
 
-    const response = await this.youtube.captions.insert({
+    const response = await this.youtube.captions.update({
       oauth_token: oAuthToken,
       part: ['snippet'],
       requestBody: captionResource,
@@ -130,8 +130,11 @@ export class YoutubeService {
             },
           },
         );
+
+        console.log('..33');
       } catch (error) {
         // 오류 처리 (예: 로깅, 오류 메시지 반환)
+        console.log('error > ' + error);
         throw error;
       }
     }
