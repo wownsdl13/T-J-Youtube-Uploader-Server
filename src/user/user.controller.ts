@@ -87,4 +87,10 @@ export class UserController {
   async updateYoutubeApiKey(@Jwt() jwt, @Body('key') key: string) {
     await this.userService.updateYoutubeApiKey(jwt.userPk, key);
   }
+
+  @UseGuards(AccessAuthGuard)
+  @Post('update_deepl_api_key')
+  async updateDeepLApiKey(@Jwt() jwt, @Body('key') key: string) {
+    await this.userService.updateDeepLApiKey(jwt.userPk, key);
+  }
 }

@@ -25,7 +25,18 @@ export class YoutubeService {
     srt: string,
     oAuthToken: string,
   ) {
-    const captionResource = {
+    const captionsList = await this.youtube.captions.list({
+      part: ['snippet'],
+      videoId: videoId,
+      oauth_token: oAuthToken,
+    });
+
+    // 원하는 언어의 자막이 있는지 확인합니다.
+    const existingCaption = captionsList.data.items.find(
+      (caption) => caption.snippet.language === language,
+    );
+
+    const captionResource: any = {
       snippet: {
         videoId: videoId,
         language: language,
@@ -33,8 +44,10 @@ export class YoutubeService {
         isDraft: false,
       },
     };
-
-    const response = await this.youtube.captions.update({
+    if (existingCaption) {
+      captionResource.id = existingCaption.id;
+    }
+    const params = {
       oauth_token: oAuthToken,
       part: ['snippet'],
       requestBody: captionResource,
@@ -42,8 +55,14 @@ export class YoutubeService {
         mimeType: 'text/srt',
         body: srt, // 여기에 실제 자막 데이터(예: SRT 파일 내용)를 제공합니다.
       },
-    });
-    return response.data;
+    };
+    if (existingCaption) {
+      const response = await this.youtube.captions.update(params);
+      return response.data;
+    } else {
+      const response = await this.youtube.captions.insert(params);
+      return response.data;
+    }
   }
 
   async uploadThumbnail(
@@ -108,7 +127,8 @@ export class YoutubeService {
     videoId: string,
     localizations: Record<string, any>,
     oAuthToken: string,
-  ): Promise<AxiosResponse<any>> {
+  ) {
+    console.log('JSON > ' + JSON.stringify(localizations));
     const user = await this.userRepository.findOne({
       where: {
         id: id,
@@ -116,26 +136,79 @@ export class YoutubeService {
     });
     if (user) {
       const url = `https://www.googleapis.com/youtube/v3/videos?part=localizations&key=${user.youtubeApiKey}`;
+      // const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet`;
       try {
-        return await axios.put(
-          url,
-          {
+        // try {
+        const response = await this.youtube.videos.update({
+          part: ['localizations'],
+          requestBody: {
             id: videoId,
             localizations: localizations,
+            // 'snippet'은 선택적이며, 기본 언어나 다른 필드를 업데이트해야 할 때 포함합니다.
           },
-          {
-            headers: {
-              Authorization: `Bearer ${oAuthToken}`,
-              'Content-Type': 'application/json',
-            },
-          },
-        );
+          // OAuth 2.0를 사용하여 요청을 인증합니다.
+          oauth_token: oAuthToken,
+        });
 
-        console.log('..33');
+        //
+        //   return response.data;
+        // } catch (error) {
+        //   console.error('Error updating video localizations:', error);
+        //   throw error;
+        // }
+        // return await axios.put(
+        //   url,
+        //   {
+        //     id: videoId,
+        //     localizations: localizations,
+        //   },
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${oAuthToken}`,
+        //       'Content-Type': 'application/json',
+        //     },
+        //   },
+        // );
       } catch (error) {
         // 오류 처리 (예: 로깅, 오류 메시지 반환)
         console.log('error > ' + error);
+        if (error.response) {
+          console.error('Error data:', error.response.data);
+          console.error('Error status:', error.response.status);
+        }
         throw error;
+      }
+    }
+  }
+
+  async translateText(id: string, text: string, targetLanguage: string) {
+    const params = new URLSearchParams();
+    params.append('text', text);
+    params.append('target_lang', targetLanguage);
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+    if (user) {
+      const config = {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          Authorization: `DeepL-Auth-Key ${user.deepLAPIKey}`,
+        },
+      };
+      try {
+        const response = await axios.post(
+          'https://api-free.deepl.com/v2/translate',
+          params,
+          config,
+        );
+        return response.data.translations[0].text;
+      } catch (error) {
+        // 에러 핸들링: error 객체에서 자세한 정보를 추출하고 로깅할 수 있음
+        console.error(error);
+        throw new Error('Failed to translate text.');
       }
     }
   }
