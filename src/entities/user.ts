@@ -15,6 +15,12 @@ export class User {
   youtubeApiKey: string;
 
   @Column({
+    type: 'varchar',
+    nullable: true,
+  })
+  deepLAPIKey: string;
+
+  @Column({
     type: 'longtext',
   })
   titleHeader: string;

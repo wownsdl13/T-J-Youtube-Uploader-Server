@@ -116,6 +116,10 @@ export class UserService {
     await this.userRepository.update(id, { youtubeApiKey: key });
   }
 
+  async updateDeepLApiKey(id: string, key: string): Promise<any> {
+    await this.userRepository.update(id, { deepLAPIKey: key });
+  }
+
   async getAccessToken(id: string, accessToken: string): Promise<any> {
     const data = await axios.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
