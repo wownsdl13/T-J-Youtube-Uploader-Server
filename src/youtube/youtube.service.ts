@@ -25,11 +25,13 @@ export class YoutubeService {
     srt: string,
     oAuthToken: string,
   ) {
+    console.log(`..111 >> `);
     const captionsList = await this.youtube.captions.list({
       part: ['snippet'],
       videoId: videoId,
       oauth_token: oAuthToken,
     });
+    console.log(`..222 >> `);
 
     // 원하는 언어의 자막이 있는지 확인합니다.
     const existingCaption = captionsList.data.items.find(
@@ -40,7 +42,7 @@ export class YoutubeService {
       snippet: {
         videoId: videoId,
         language: language,
-        name: 'lang-' + language, // 예: 'English captions'
+        name: '', // 예: 'English captions'
         isDraft: false,
       },
     };
@@ -71,7 +73,7 @@ export class YoutubeService {
     thumbnail: Buffer,
     oAuthToken: string,
   ): Promise<AxiosResponse> {
-    // console.log(`..111 > ${thumbnail}`);
+    console.log(`..111 > `);
     const user = await this.userRepository.findOne({
       where: {
         id: id,
@@ -118,6 +120,10 @@ export class YoutubeService {
     } catch (error) {
       // Handle error accordingly
       console.error(error);
+      if (error.response) {
+        console.error('Error data:', error.response.data);
+        console.error('Error status:', error.response.status);
+      }
       throw error;
     }
   }
@@ -135,10 +141,7 @@ export class YoutubeService {
       },
     });
     if (user) {
-      const url = `https://www.googleapis.com/youtube/v3/videos?part=localizations&key=${user.youtubeApiKey}`;
-      // const url = `https://www.googleapis.com/youtube/v3/videos?part=snippet`;
       try {
-        // try {
         const response = await this.youtube.videos.update({
           part: ['localizations'],
           requestBody: {
@@ -149,26 +152,6 @@ export class YoutubeService {
           // OAuth 2.0를 사용하여 요청을 인증합니다.
           oauth_token: oAuthToken,
         });
-
-        //
-        //   return response.data;
-        // } catch (error) {
-        //   console.error('Error updating video localizations:', error);
-        //   throw error;
-        // }
-        // return await axios.put(
-        //   url,
-        //   {
-        //     id: videoId,
-        //     localizations: localizations,
-        //   },
-        //   {
-        //     headers: {
-        //       Authorization: `Bearer ${oAuthToken}`,
-        //       'Content-Type': 'application/json',
-        //     },
-        //   },
-        // );
       } catch (error) {
         // 오류 처리 (예: 로깅, 오류 메시지 반환)
         console.log('error > ' + error);
