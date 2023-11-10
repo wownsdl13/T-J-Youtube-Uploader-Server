@@ -36,6 +36,7 @@ export class UserController {
     @Jwt() jwt,
     @Body('accessToken') accessToken: string, // accessToken of google sign in
   ): Promise<any> {
+    console.log('access!!');
     return {
       accessToken: await this.userService.getAccessToken(
         jwt.userPk,
