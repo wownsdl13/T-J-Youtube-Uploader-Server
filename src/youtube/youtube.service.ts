@@ -189,7 +189,6 @@ export class YoutubeService {
         );
         return response.data.translations[0].text;
       } catch (error) {
-        // 에러 핸들링: error 객체에서 자세한 정보를 추출하고 로깅할 수 있음
         console.error(error);
         throw new Error('Failed to translate text.');
       }
