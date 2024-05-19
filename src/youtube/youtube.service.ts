@@ -25,13 +25,11 @@ export class YoutubeService {
     srt: string,
     oAuthToken: string,
   ) {
-    console.log(`..111 >> `);
     const captionsList = await this.youtube.captions.list({
       part: ['snippet'],
       videoId: videoId,
       oauth_token: oAuthToken,
     });
-    console.log(`..222 >> `);
 
     // 원하는 언어의 자막이 있는지 확인합니다.
     const existingCaption = captionsList.data.items.find(

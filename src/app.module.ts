@@ -18,7 +18,7 @@ import { YoutubeModule } from './youtube/youtube.module';
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
-      type: 'mariadb',
+      type: 'mysql',
       host: Process.env.DB_HOST,
       port: parseInt(Process.env.DB_PORT),
       username: Process.env.DB_USERNAME,

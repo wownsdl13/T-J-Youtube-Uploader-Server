@@ -4,7 +4,7 @@ import { UserTag } from './user.tag';
 export class User {
   @PrimaryColumn({
     type: 'varchar',
-    charset: 'utf8mb4',
+    // charset: 'utf8mb4',
   })
   id: string;
 
