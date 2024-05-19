@@ -112,12 +112,36 @@ export class UserService {
     }
   }
 
+  async getYoutubeApiKey(id: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+    if (user) {
+      return {
+        youtubeApiKey: user.youtubeApiKey,
+      };
+    }
+  }
+
   async updateYoutubeApiKey(id: string, key: string): Promise<any> {
     await this.userRepository.update(id, { youtubeApiKey: key });
   }
 
-  async updateDeepLApiKey(id: string, key: string): Promise<any> {
-    await this.userRepository.update(id, { deepLAPIKey: key });
+  async updateOpenAiApiKey(id: string, key: string): Promise<any> {
+    await this.userRepository.update(id, { openAiApiKey: key });
+  }
+
+  async getOpenAiApiKey(id: string): Promise<any> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: id,
+      },
+    });
+    return {
+      openAiApiKey: user.openAiApiKey,
+    };
   }
 
   async getAccessToken(id: string, accessToken: string): Promise<any> {

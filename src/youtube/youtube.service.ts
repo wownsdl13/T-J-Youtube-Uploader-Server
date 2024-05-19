@@ -132,7 +132,6 @@ export class YoutubeService {
     localizations: Record<string, any>,
     oAuthToken: string,
   ) {
-    console.log('JSON > ' + JSON.stringify(localizations));
     const user = await this.userRepository.findOne({
       where: {
         id: id,
@@ -158,37 +157,6 @@ export class YoutubeService {
           console.error('Error status:', error.response.status);
         }
         throw error;
-      }
-    }
-  }
-
-  async translateText(id: string, text: string, targetLanguage: string) {
-    const params = new URLSearchParams();
-    params.append('text', text);
-    params.append('target_lang', targetLanguage);
-
-    const user = await this.userRepository.findOne({
-      where: {
-        id: id,
-      },
-    });
-    if (user) {
-      const config = {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `DeepL-Auth-Key ${user.deepLAPIKey}`,
-        },
-      };
-      try {
-        const response = await axios.post(
-          'https://api-free.deepl.com/v2/translate',
-          params,
-          config,
-        );
-        return response.data.translations[0].text;
-      } catch (error) {
-        console.error(error);
-        throw new Error('Failed to translate text.');
       }
     }
   }

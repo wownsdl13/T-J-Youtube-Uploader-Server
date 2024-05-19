@@ -90,8 +90,20 @@ export class UserController {
   }
 
   @UseGuards(AccessAuthGuard)
-  @Post('update_deepl_api_key')
-  async updateDeepLApiKey(@Jwt() jwt, @Body('key') key: string) {
-    await this.userService.updateDeepLApiKey(jwt.userPk, key);
+  @Get('get_youtube_api_key')
+  async getYoutubeApiKey(@Jwt() jwt): Promise<any> {
+    return await this.userService.getYoutubeApiKey(jwt.userPk);
+  }
+
+  @UseGuards(AccessAuthGuard)
+  @Post('update_open_ai_api_key')
+  async updateOpenAiKey(@Jwt() jwt, @Body('key') key: string): Promise<any> {
+    await this.userService.updateOpenAiApiKey(jwt.userPk, key);
+  }
+
+  @UseGuards(AccessAuthGuard)
+  @Get('get_open_ai_api_key')
+  async getOpenAiKey(@Jwt() jwt): Promise<any> {
+    return await this.userService.getOpenAiApiKey(jwt.userPk);
   }
 }

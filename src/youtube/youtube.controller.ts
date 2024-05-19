@@ -82,18 +82,4 @@ export class YoutubeController {
       oAuthToken,
     );
   }
-
-  @UseGuards(AccessAuthGuard)
-  @Post('translate_text')
-  async translateText(
-    @Jwt() jwt,
-    @Body('text') text: string,
-    @Body('targetLanguage') targetLanguage: string,
-  ) {
-    return await this.youtubeService.translateText(
-      jwt.userPk,
-      text,
-      targetLanguage,
-    );
-  }
 }

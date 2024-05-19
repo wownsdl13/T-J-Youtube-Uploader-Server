@@ -18,7 +18,7 @@ export class User {
     type: 'varchar',
     nullable: true,
   })
-  deepLAPIKey: string;
+  openAiApiKey: string;
 
   @Column({
     type: 'longtext',
