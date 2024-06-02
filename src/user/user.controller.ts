@@ -1,19 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  Query,
-  UploadedFile,
-  UseGuards,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AccessAuthGuard } from '../utils/jwt/access/access.auth-guard';
 import { Jwt } from '../utils/decorator/jwt-payload';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { RefreshAuthGuard } from '../utils/jwt/refresh/refresh-auth-guard.service';
 
 @Controller('user')
@@ -24,9 +12,9 @@ export class UserController {
   async getRefreshToken(
     @Body('accessToken') accessToken: string, // accessToken of google sign in
   ): Promise<any> {
-    console.log('refresh token');
+    const refreshToken = await this.userService.getRefreshToken(accessToken);
     return {
-      refreshToken: await this.userService.getRefreshToken(accessToken),
+      refreshToken: refreshToken,
     };
   }
 
@@ -36,7 +24,6 @@ export class UserController {
     @Jwt() jwt,
     @Body('accessToken') accessToken: string, // accessToken of google sign in
   ): Promise<any> {
-    console.log('access!!');
     return {
       accessToken: await this.userService.getAccessToken(
         jwt.userPk,

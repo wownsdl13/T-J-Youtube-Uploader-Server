@@ -7,7 +7,6 @@ import { User } from '../entities/user';
 import { DataSource, Repository } from 'typeorm';
 import { UserTag } from '../entities/user.tag';
 import { v1 as uuidv1 } from 'uuid';
-import { google } from 'googleapis';
 
 @Injectable()
 export class UserService {
@@ -144,7 +143,7 @@ export class UserService {
     };
   }
 
-  async getAccessToken(id: string, accessToken: string): Promise<any> {
+  async getAccessToken(userPk: string, accessToken: string): Promise<any> {
     const data = await axios.get(
       'https://www.googleapis.com/oauth2/v3/userinfo',
       {
@@ -154,10 +153,10 @@ export class UserService {
       },
     );
     const pk = data.data.sub;
-    if (pk === id) {
+    if (pk === userPk) {
       return this.jwtService.sign(
         {
-          userPk: id,
+          userPk: userPk,
         },
         {
           secret: process.env.JWT_ACCESS_SECRET,

@@ -9,6 +9,10 @@ import { UserModule } from './user/user.module';
 import { UserTag } from './entities/user.tag';
 import { JwtModule } from '@nestjs/jwt';
 import { YoutubeModule } from './youtube/youtube.module';
+import { SubtitleModule } from './subtitle/subtitle.module';
+import { Subtitle } from './entities/subtitle';
+import { SubtitleOne } from './entities/subtitle.one';
+import { SubtitleOneTranslate } from './entities/subtitle.one-translate';
 
 @Module({
   imports: [
@@ -26,11 +30,12 @@ import { YoutubeModule } from './youtube/youtube.module';
       database: Process.env.DB_DATABASE,
       synchronize: true,
       autoLoadEntities: true,
-      entities: [User, UserTag],
+      entities: [User, UserTag, Subtitle, SubtitleOne, SubtitleOneTranslate],
       charset: 'utf8mb4',
     }),
     UserModule,
     YoutubeModule,
+    SubtitleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
