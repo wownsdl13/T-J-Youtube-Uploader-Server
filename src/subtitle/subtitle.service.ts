@@ -237,25 +237,37 @@ export class SubtitleService {
     const inputs = audioFiles.map((file, index) => {
       const period = periods[index].split(' --> ');
       const start = this.convertToSeconds(period[0]) * 1000; // Convert to milliseconds
-      return { file, start };
+      const end = this.convertToSeconds(period[1]) * 1000; // Convert to milliseconds
+      return { file, start, end };
     });
 
-    // Create filter complex argument
+    // Get durations of all audio files
+    const durations = await Promise.all(
+      audioFiles.map((file) => this.getAudioDuration(file)),
+    );
+
+    let previousEnd = 0;
     const filterComplexArgs =
-      inputs
-        .map((input, index) => {
-          return `[${index}:0]adelay=${input.start}|${input.start}[a${index}]`;
+      audioFiles
+        .map((file, index) => {
+          const period = periods[index].split(' --> ');
+          const start = this.convertToSeconds(period[0]) * 1000; // Convert to milliseconds
+          const delay = start - previousEnd;
+          previousEnd = start + durations[index];
+          return `[${index}:0]adelay=${delay}|${delay}[a${index}]`;
         })
         .join('; ') +
       `; ` +
-      inputs.map((_, index) => `[a${index}]`).join('') +
-      `amix=inputs=${inputs.length},loudnorm=I=-16:LRA=11:TP=-1.5[outa]`;
+      audioFiles.map((_, index) => `[a${index}]`).join('') +
+      `concat=n=${audioFiles.length}:v=0:a=1[outa]`;
 
     // Configure ffmpeg command
     command
       .complexFilter([filterComplexArgs])
       .outputOptions('-map', '[outa]')
       .output(mergedFilePath)
+      .audioBitrate('192k') // Set bitrate to 192 kbps
+      .audioFrequency(44100) // Set sample rate to 44.1 kHz
       .audioCodec('libmp3lame') // Ensure MP3 codec is used
       .on('end', () => {
         console.timeEnd('mergeAudio');
@@ -291,5 +303,17 @@ export class SubtitleService {
       parseInt(secs) +
       parseInt(ms) / 1000
     );
+  }
+
+  private async getAudioDuration(file: string): Promise<number> {
+    return new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(file, (err, metadata) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(metadata.format.duration * 1000); // Convert to milliseconds
+        }
+      });
+    });
   }
 }
