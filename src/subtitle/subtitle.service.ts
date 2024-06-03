@@ -203,7 +203,10 @@ export class SubtitleService {
     const periods: string[] = [];
 
     for (const request of srtList) {
-      const outputPath = path.join(__dirname, `audio_${Date.now()}.mp3`);
+      const outputPath = path.join(
+        __dirname,
+        `audio_${srtList.indexOf(request)}.mp3`,
+      );
       await this.synthesizeSpeech(request.text, outputPath);
       console.log(`text TTS > ${request.text}`);
       audioFiles.push(outputPath);
@@ -230,15 +233,8 @@ export class SubtitleService {
 
     // Add input files to the command
     audioFiles.forEach((file) => {
+      console.log(`file!-${file}`);
       command.input(file);
-    });
-
-    // Prepare filter arguments
-    const inputs = audioFiles.map((file, index) => {
-      const period = periods[index].split(' --> ');
-      const start = this.convertToSeconds(period[0]) * 1000; // Convert to milliseconds
-      const end = this.convertToSeconds(period[1]) * 1000; // Convert to milliseconds
-      return { file, start, end };
     });
 
     // Get durations of all audio files
@@ -252,7 +248,11 @@ export class SubtitleService {
         .map((file, index) => {
           const period = periods[index].split(' --> ');
           const start = this.convertToSeconds(period[0]) * 1000; // Convert to milliseconds
-          const delay = start - previousEnd;
+          let delay = start - previousEnd;
+          // if delay is negative, then just put 0
+          if (delay < 0) {
+            delay = 0;
+          }
           previousEnd = start + durations[index];
           return `[${index}:0]adelay=${delay}|${delay}[a${index}]`;
         })
@@ -273,9 +273,11 @@ export class SubtitleService {
         console.timeEnd('mergeAudio');
         console.log('Merging finished!');
       })
-      .on('error', (err) => {
+      .on('error', (err, stdout, stderr) => {
         console.timeEnd('mergeAudio');
-        console.error('Error merging audio files:', err);
+        console.log('Error: ' + err.message);
+        console.log('ffmpeg stdout: ' + stdout);
+        console.log('ffmpeg stderr: ' + stderr);
       });
 
     return new Promise((resolve, reject) => {
